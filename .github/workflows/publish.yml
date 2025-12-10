@@ -1,0 +1,82 @@
+name: Publish articles
+
+on:
+  # main/master ブランチへのプッシュをトリガーとする
+  push:
+    branches:
+      - main
+      - master
+  # 手動実行を可能にする（Actionsタブから実行可能）
+  workflow_dispatch:
+
+permissions:
+  # リポジトリのコンテンツ（記事ファイル）への書き込み権限が必要
+  contents: write
+
+concurrency:
+  # 複数実行が同時に走らないように制御
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish_articles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        # リポジトリのファイルをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 差分検出のために履歴全体を取得
+
+      - name: Setup Node.js
+        # Node.js環境（バージョン20）をセットアップ
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Get changed markdown files
+        # 変更されたMarkdownファイルを検出し、後続のステップで使うためのフラグを設定
+        id: files
+        run: |
+          touch $GITHUB_WORKSPACE/changed_files.txt
+          
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep "^articles/.*\.md$" > $GITHUB_WORKSPACE/changed_files.txt || true
+          
+          if [ -z "${{ github.event.before }}" ] || [ "$(wc -l < $GITHUB_WORKSPACE/changed_files.txt)" -eq 0 ]; then
+              echo "No files found in normal diff, checking last commit..."
+              git diff --name-only HEAD~1 HEAD | grep "^articles/.*\.md$" > $GITHUB_WORKSPACE/changed_files.txt || true
+          fi
+          
+          if [ "$(wc -l < $GITHUB_WORKSPACE/changed_files.txt)" -eq 0 ] && [[ "${{ github.event.pull_request.title }}" == *"#"* ]]; then
+              PR_NUM=$(echo "${{ github.event.pull_request.title }}" | grep -o '#[0-9]*' | tr -d '#')
+              if [ -n "$PR_NUM" ] && [ -f "articles/openhands_introduction.md" ]; then
+                  echo "articles/openhands_introduction.md" > $GITHUB_WORKSPACE/changed_files.txt
+              fi
+          fi
+          
+          echo "📋 Changed markdown files:"
+          cat $GITHUB_WORKSPACE/changed_files.txt
+          
+          if [ "$(wc -l < $GITHUB_WORKSPACE/changed_files.txt)" -gt 0 ]; then
+              echo "found_files=true" >> $GITHUB_OUTPUT
+          else
+              echo "found_files=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Install qiita-cli
+        # 変更ファイルがある場合にのみQiita CLIをインストール
+        if: steps.files.outputs.found_files == 'true'
+        run: |
+          npm install @qiita/qiita-cli --save-dev
+        shell: bash
+
+      - name: Run zenn-qiita-sync
+        # 変更ファイルがある場合にのみ同期アクションを実行
+        if: steps.files.outputs.found_files == 'true'
+        uses: C-Naoki/zenn-qiita-sync@main
+        with:
+          # GitHub Secretsに設定したQiitaトークンを使用
+          qiita-token: ${{ secrets.QIITA_TOKEN }}
