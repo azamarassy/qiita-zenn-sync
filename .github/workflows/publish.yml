@@ -76,6 +76,7 @@ jobs:
       - name: Run zenn-qiita-sync
         # 変更ファイルがある場合にのみ同期アクションを実行
         if: steps.files.outputs.found_files == 'true'
-        uses: suin/zenn-sync-action@v1
+        uses: C-Naoki/zenn-qiita-sync@main
         with:
+          # GitHub Secretsに設定したQiitaトークンを使用
           qiita-token: ${{ secrets.QIITA_TOKEN }}
