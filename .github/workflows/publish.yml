@@ -31,10 +31,10 @@ jobs:
           fetch-depth: 0 # 差分検出のために履歴全体を取得
 
       - name: Setup Node.js
-        # Node.js環境（バージョン20）をセットアップ
+        # Node.js環境（バージョン22）をセットアップ
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Get changed markdown files
         # 変更されたMarkdownファイルを検出し、後続のステップで使うためのフラグを設定
