@@ -2,9 +2,13 @@
 title: "【AWS】ECSを用いた簡易web構築1(構成概要)"
 emoji: "🚀"
 type: "tech"
-topics: ["AWS", "ECS", "インフラ"]
+tags:
+  - name: AWS
+  - name: ECS
+  - name: インフラ
 published: false
 ---
+
 
 
 -----
