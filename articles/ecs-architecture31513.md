@@ -1,7 +1,5 @@
 ---
 title: "【AWS】ECSを用いた簡易web構築1(構成概要)"
-emoji: "🚀"
-type: "tech"
 tags:
   - name: AWS
   - name: ECS
@@ -16,3 +14,4 @@ published: false
 ## 📚 目次
   * [やる事]()
       * [GitHubにコードを準備]()
+      
