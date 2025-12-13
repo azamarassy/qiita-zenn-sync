@@ -1,4 +1,5 @@
-name: Publish to Qiita
+# Please set 'QIITA_TOKEN' secret to your repository
+name: Publish articles
 
 on:
   push:
@@ -8,25 +9,21 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish_qiita:
+  publish_articles:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: 22
-
-      - name: Install qiita-cli
-        run: npm install -g @qiita/qiita-cli
-
-      - name: Publish (or Save as Draft) to Qiita
-        run: qiita publish
-        env:
-          QIITA_TOKEN: ${{ secrets.QIITA_TOKEN }}
+          fetch-depth: 0
+      - uses: increments/qiita-cli/actions/publish@v1
+        with:
+          qiita-token: ${{ secrets.QIITA_TOKEN }}
+          root: "."
