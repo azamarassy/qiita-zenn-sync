@@ -1,12 +1,12 @@
 ---
 title: 【AWS】ECSを用いた簡易web構築1(構成概要)
 tags:
-  - 'AWS'
-  - 'ECS'
-  - 'インフラ'
+  - AWS
+  - インフラ
+  - ECS
 private: true
-updated_at: ''
-id: null
+updated_at: '2025-12-13T11:22:20+09:00'
+id: 25dd0870a621f823b40e
 organization_url_name: null
 slide: false
 ignorePublish: false
